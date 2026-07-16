@@ -117,7 +117,8 @@ router.post('/api/records/:customerId', requireLogin, asyncHandler(async (req, r
   const severePct = toNumOrNull(b.severe_asthma_pct);
   const xolairPct = toNumOrNull(b.xolair_pct);
   const severeNo = monthlyVolume != null && severePct != null ? Math.round((monthlyVolume * severePct) / 100) : null;
-  const xolairNo = monthlyVolume != null && xolairPct != null ? Math.round((monthlyVolume * xolairPct) / 100) : null;
+  // Xolair 只用於 severe asthma 病人，所以 Xolair % 是佔 severe asthma 人數的比例，不是佔月病人量
+  const xolairNo = severeNo != null && xolairPct != null ? Math.round((severeNo * xolairPct) / 100) : null;
 
   const values = [
     customerId,

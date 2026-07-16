@@ -61,8 +61,10 @@ function calcDisplays() {
   const vol = parseFloat(form.monthly_patient_volume.value) || 0;
   const severePct = parseFloat(form.severe_asthma_pct.value) || 0;
   const xolairPct = parseFloat(form.xolair_pct.value) || 0;
-  document.getElementById('severe_asthma_no_display').value = vol && severePct ? Math.round((vol * severePct) / 100) : '';
-  document.getElementById('xolair_no_display').value = vol && xolairPct ? Math.round((vol * xolairPct) / 100) : '';
+  const severeNo = vol && severePct ? Math.round((vol * severePct) / 100) : 0;
+  document.getElementById('severe_asthma_no_display').value = severeNo || '';
+  // Xolair 只用於 severe asthma 病人，Xolair % 是佔 severe asthma 人數的比例
+  document.getElementById('xolair_no_display').value = severeNo && xolairPct ? Math.round((severeNo * xolairPct) / 100) : '';
 }
 
 async function selectCustomer(id) {
