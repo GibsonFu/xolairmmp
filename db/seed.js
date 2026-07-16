@@ -12,6 +12,8 @@ const ADMIN_USERNAMES = ['Gibson', 'Sandy', 'Tim'];
 const DEFAULT_PASSWORD = '0000';
 
 const DEFAULT_OPTIONS = {
+  team: ['SCN1', 'SCN2', 'SCC', 'SCS'],
+  customer_tier: ['MC', 'RH', 'AH'],
   customer_relationship: ['陌生', '認識', '熟識'],
   adoption_ladder: ['未接觸', '試用', '採用', '倡導'],
   current_status: ['減少使用(處方他廠)', '維持使用', '持續做為首選'],

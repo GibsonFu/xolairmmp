@@ -7,7 +7,7 @@ const { sendWorkbook } = require('../utils/exportRecords');
 
 const router = express.Router();
 
-const OPTION_CATEGORIES = ['customer_relationship', 'adoption_ladder', 'current_status'];
+const OPTION_CATEGORIES = ['team', 'customer_tier', 'customer_relationship', 'adoption_ladder', 'current_status'];
 
 router.get('/api/options', requireLogin, asyncHandler(async (req, res) => {
   const { rows } = await pool.query(
