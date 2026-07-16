@@ -5,7 +5,7 @@ const BASE_QUERY = `
     c.id AS customer_id, p.code AS psr_code, p.name AS psr_name,
     c.specialty, c.tiering, c.customer_code, c.customer_name, c.contact_name,
     c.department, c.title,
-    r.record_month, r.team, r.customer_tier, r.hcp_tier, r.customer_relationship, r.adoption_ladder,
+    r.record_month, r.team, r.customer_tier, c.tiering AS hcp_tier, r.customer_relationship, r.adoption_ladder,
     r.monthly_patient_volume, r.current_status,
     r.severe_asthma_pct, r.severe_asthma_no, r.xolair_pct, r.xolair_no,
     r.dupixent_no, r.fasenra_no, r.nucala_no, r.tezspire_no,
