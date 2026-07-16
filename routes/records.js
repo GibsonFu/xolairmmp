@@ -2,22 +2,12 @@ const express = require('express');
 const pool = require('../db/pool');
 const { requireLogin } = require('../middleware/auth');
 const asyncHandler = require('../middleware/asyncHandler');
+const { currentMonthStr, normalizeMonth, MONTH_RE } = require('../utils/month');
+const { sendWorkbook } = require('../utils/exportRecords');
 
 const router = express.Router();
 
 const OPTION_CATEGORIES = ['customer_relationship', 'adoption_ladder', 'current_status'];
-const MONTH_RE = /^\d{4}-\d{2}$/;
-
-function currentMonthStr() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-}
-
-// 'YYYY-MM' -> 'YYYY-MM-01'；格式不對就用當月
-function normalizeMonth(input) {
-  const monthStr = MONTH_RE.test(input || '') ? input : currentMonthStr();
-  return `${monthStr}-01`;
-}
 
 router.get('/api/options', requireLogin, asyncHandler(async (req, res) => {
   const { rows } = await pool.query(
@@ -88,6 +78,34 @@ router.get('/api/customers/:id', requireLogin, asyncHandler(async (req, res) => 
   }
 
   res.json({ ...customer, customer_id: customer.id, record_month: month, carried_over: false });
+}));
+
+// 業代匯出自己的資料（依選定月份）
+router.get('/api/export', requireLogin, asyncHandler(async (req, res) => {
+  if (req.session.user.role !== 'psr') {
+    return res.status(403).json({ error: '請至彙整頁面使用匯出功能' });
+  }
+  const month = normalizeMonth(req.query.month);
+  const { rows } = await pool.query(
+    `SELECT
+       c.id AS customer_id, p.code AS psr_code, p.name AS psr_name,
+       c.specialty, c.tiering, c.customer_code, c.customer_name, c.contact_name,
+       c.department, c.title,
+       r.record_month, r.team, r.customer_tier, r.hcp_tier, r.customer_relationship, r.adoption_ladder,
+       r.monthly_patient_volume, r.current_status,
+       r.severe_asthma_pct, r.severe_asthma_no, r.xolair_pct, r.xolair_no,
+       r.dupixent_no, r.fasenra_no, r.nucala_no, r.tezspire_no,
+       r.competitor_activity, r.nurse_support, r.key_barriers, r.objectives,
+       r.monthly_call_no, r.action_plan, r.updated_at, r.updated_by
+     FROM customers c
+     JOIN psrs p ON p.code = c.psr_code
+     LEFT JOIN records r ON r.customer_id = c.id AND r.record_month = $2
+     WHERE c.psr_code = $1
+     ORDER BY c.customer_name, c.contact_name`,
+    [req.session.user.psr_code, month]
+  );
+  const monthLabel = MONTH_RE.test(req.query.month || '') ? req.query.month : currentMonthStr();
+  await sendWorkbook(res, rows, `Xolair_MMP_${req.session.user.psr_code}_${monthLabel}.xlsx`);
 }));
 
 function toIntOrNull(v) {

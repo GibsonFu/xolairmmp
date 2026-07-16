@@ -116,6 +116,11 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCustomers();
   });
 
+  document.getElementById('exportBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = `/api/export?month=${currentMonth}`;
+  });
+
   document.getElementById('searchBox').addEventListener('input', (e) => renderCustomerList(e.target.value));
 
   document.querySelectorAll('.calc-input').forEach((el) => el.addEventListener('input', calcDisplays));
