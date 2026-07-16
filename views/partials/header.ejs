@@ -1,0 +1,10 @@
+<header class="topbar">
+  <div class="title">Xolair MMP 紀錄彙整</div>
+  <div>
+    <span class="who"><%= user.display_name %>（<%= user.role === 'admin' ? '管理者' : '業代 ' + user.psr_code %>）</span>
+    <a class="btn btn-secondary" href="/change-password">變更密碼</a>
+    <form style="display:inline" method="POST" action="/logout">
+      <button type="submit" class="btn-secondary" style="background:#eef1f4;color:#1c2733;">登出</button>
+    </form>
+  </div>
+</header>

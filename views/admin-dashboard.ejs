@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>彙整總表 - Xolair MMP</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header', { user }) %>
+  <div class="container">
+    <div class="toolbar">
+      <select id="f_psr"><option value="">全部業代</option></select>
+      <select id="f_specialty"><option value="">全部科別</option></select>
+      <select id="f_tiering"><option value="">全部 Tiering</option></select>
+      <select id="f_status"><option value="">全部 Current Status</option></select>
+      <input type="text" id="f_search" placeholder="搜尋客戶/醫師...">
+      <a class="btn" id="exportBtn" href="/api/admin/export">匯出 Excel</a>
+    </div>
+    <div id="summary" style="margin-bottom:0.8rem; color:#6b7684; font-size:0.9rem;"></div>
+    <div class="table-scroll">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>PSR</th><th>業代姓名</th><th>Customer</th><th>Customer Tier</th><th>HCP</th>
+            <th>科別</th><th>職稱</th><th>HCP Tier</th><th>Customer Relationship</th>
+            <th>Adoption Ladder</th><th>月病人量</th><th>Current Status</th>
+            <th>Severe %</th><th>Severe No.</th><th>Xolair %</th><th>Xolair No.</th>
+            <th>Dupixent</th><th>Fasenra</th><th>Nucala</th><th>Tezspire</th>
+            <th>Key barriers</th><th>Objectives</th><th>monthly call No</th><th>Action Plan</th>
+            <th>最後更新</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

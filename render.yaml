@@ -1,0 +1,23 @@
+databases:
+  - name: xolairmmp-db
+    plan: free
+    databaseName: xolairmmp
+    user: xolairmmp
+
+services:
+  - type: web
+    name: xolairmmp
+    env: node
+    plan: free
+    buildCommand: npm install
+    preDeployCommand: node db/seed.js
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: xolairmmp-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production

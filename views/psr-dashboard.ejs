@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的客戶紀錄 - Xolair MMP</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header', { user }) %>
+  <div class="container">
+    <div class="layout-2col">
+      <div>
+        <div class="toolbar">
+          <input type="text" id="searchBox" placeholder="搜尋客戶/醫師姓名...">
+        </div>
+        <div id="customerList"></div>
+      </div>
+      <div>
+        <div class="card" id="formCard" style="display:none;">
+          <h2 id="formTitle" style="margin-top:0;"></h2>
+          <div style="color:#6b7684; font-size:0.85rem; margin-bottom:1rem;" id="formSubtitle"></div>
+          <form id="recordForm">
+            <div class="form-grid">
+              <div class="field">
+                <label>Team</label>
+                <input type="text" name="team">
+              </div>
+              <div class="field">
+                <label>Customer Tier</label>
+                <input type="text" name="customer_tier">
+              </div>
+              <div class="field">
+                <label>HCP Tier</label>
+                <input type="text" name="hcp_tier">
+              </div>
+              <div class="field">
+                <label>Customer Relationship</label>
+                <select name="customer_relationship" data-options="customer_relationship"></select>
+              </div>
+              <div class="field">
+                <label>Adoption Ladder</label>
+                <select name="adoption_ladder" data-options="adoption_ladder"></select>
+              </div>
+              <div class="field">
+                <label>Current Status</label>
+                <select name="current_status" data-options="current_status"></select>
+              </div>
+              <div class="field">
+                <label>月病人量</label>
+                <input type="number" name="monthly_patient_volume" min="0" class="calc-input">
+              </div>
+              <div class="field">
+                <label>Severe asthma P't %</label>
+                <input type="number" name="severe_asthma_pct" min="0" max="100" step="0.1" class="calc-input">
+              </div>
+              <div class="field">
+                <label>Severe asthma P't No.（自動換算）</label>
+                <input type="text" id="severe_asthma_no_display" class="readonly-field" readonly>
+              </div>
+              <div class="field">
+                <label>Xolair P't %</label>
+                <input type="number" name="xolair_pct" min="0" max="100" step="0.1" class="calc-input">
+              </div>
+              <div class="field">
+                <label>Xolair P't No.（自動換算）</label>
+                <input type="text" id="xolair_no_display" class="readonly-field" readonly>
+              </div>
+              <div class="field">
+                <label>monthly call No</label>
+                <input type="number" name="monthly_call_no" min="0">
+              </div>
+              <div class="field full">
+                <label>Competitor Tracking（病人數）</label>
+                <div class="form-grid">
+                  <div class="field"><label>Dupixent</label><input type="number" name="dupixent_no" min="0"></div>
+                  <div class="field"><label>Fasenra</label><input type="number" name="fasenra_no" min="0"></div>
+                  <div class="field"><label>Nucala</label><input type="number" name="nucala_no" min="0"></div>
+                  <div class="field"><label>Tezspire</label><input type="number" name="tezspire_no" min="0"></div>
+                </div>
+              </div>
+              <div class="field full">
+                <label>competitor activity</label>
+                <textarea name="competitor_activity" rows="2"></textarea>
+              </div>
+              <div class="field full">
+                <label>nurse support</label>
+                <textarea name="nurse_support" rows="2"></textarea>
+              </div>
+              <div class="field full">
+                <label>Key barriers</label>
+                <textarea name="key_barriers" rows="2"></textarea>
+              </div>
+              <div class="field full">
+                <label>Objectives</label>
+                <textarea name="objectives" rows="2"></textarea>
+              </div>
+              <div class="field full">
+                <label>Action Plan</label>
+                <textarea name="action_plan" rows="3"></textarea>
+              </div>
+            </div>
+            <div style="margin-top:1rem;">
+              <button type="submit">儲存</button>
+              <span class="save-status" id="saveStatus"></span>
+            </div>
+          </form>
+        </div>
+        <div class="card" id="emptyState">
+          <p style="color:#6b7684;">請從左側選擇一位客戶/醫師以填寫或編輯紀錄。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/js/psr.js"></script>
+</body>
+</html>

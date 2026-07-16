@@ -1,0 +1,225 @@
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --primary: #0b5fa5;
+  --primary-dark: #084b82;
+  --border: #dde3ea;
+  --text: #1c2733;
+  --muted: #6b7684;
+  --danger: #c0392b;
+  --success: #1e8a4c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: "Microsoft JhengHei", "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+}
+
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-card {
+  background: var(--card);
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  width: 100%;
+  max-width: 380px;
+}
+
+.auth-card h1 {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.field {
+  margin-bottom: 1rem;
+}
+
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+button, .btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.1rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button:hover, .btn:hover { background: var(--primary-dark); }
+
+.btn-secondary {
+  background: #eef1f4;
+  color: var(--text);
+}
+.btn-secondary:hover { background: #dfe4e9; }
+
+.error-msg {
+  background: #fdecea;
+  color: var(--danger);
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 1rem;
+  text-align: center;
+}
+
+header.topbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0.8rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header.topbar .title { font-weight: 600; }
+header.topbar .who { color: var(--muted); font-size: 0.9rem; margin-right: 1rem; }
+
+.container {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  font-size: 0.85rem;
+}
+
+th, td {
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.6rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  background: #eef3f8;
+  position: sticky;
+  top: 0;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.toolbar {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.toolbar select, .toolbar input {
+  width: auto;
+  min-width: 140px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.form-grid .field.full { grid-column: 1 / -1; }
+
+.readonly-field {
+  background: #f7f9fb;
+  color: var(--muted);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: #eef3f8;
+  color: var(--primary);
+}
+
+.customer-list-item {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  background: var(--card);
+}
+.customer-list-item:hover { border-color: var(--primary); }
+.customer-list-item.active { border-color: var(--primary); background: #eaf3fb; }
+.customer-list-item .name { font-weight: 600; }
+.customer-list-item .sub { color: var(--muted); font-size: 0.8rem; }
+.customer-list-item .status-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #ccc;
+  margin-right: 6px;
+}
+.customer-list-item .status-dot.filled { background: var(--success); }
+
+.layout-2col {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.save-status {
+  font-size: 0.85rem;
+  color: var(--success);
+  margin-left: 0.6rem;
+}
+
+@media (max-width: 900px) {
+  .layout-2col { grid-template-columns: 1fr; }
+}
