@@ -10,8 +10,7 @@ services:
     env: node
     plan: free
     buildCommand: npm install
-    preDeployCommand: node db/seed.js
-    startCommand: npm start
+    startCommand: node db/seed.js && npm start
     envVars:
       - key: DATABASE_URL
         fromDatabase:

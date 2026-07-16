@@ -61,7 +61,7 @@ npm start                # 預設監聽 http://localhost:3000
    - 確認方案（Free）後按下 **Apply** 開始部署。
 
 4. **等待部署完成**
-   - 第一次部署時，`preDeployCommand: node db/seed.js` 會自動建表並匯入業代/客戶資料、建立好 12 組業代帳號與 Gibson/Sandy/Tim 管理帳號。
+   - 每次啟動時，`startCommand` 會先執行 `node db/seed.js` 自動建表並匯入業代/客戶資料、建立好 12 組業代帳號與 Gibson/Sandy/Tim 管理帳號，才啟動網站（Render 免費方案不支援 preDeployCommand，所以併入啟動指令，seed 是可重複執行的，不會產生重複資料）。
    - 部署完成後 Render 會給你一個網址，例如 `https://xolairmmp.onrender.com`，把這個網址分享給業代同仁即可。
 
 5. **測試登入**
@@ -76,4 +76,4 @@ Render 免費方案的 Web Service 閒置一段時間會休眠，下次有人訪
 
 1. 更新 `Xolair 客戶清單檢查.xlsx`。
 2. 重新產生 `seed_data.json`（讀取該 Excel 並輸出 JSON，欄位需為 `psrs: [{code, name}]` 與 `customers: [{specialty, tiering, psr_code, psr_name, customer_code, customer_name, contact_name, department, title}]`）。
-3. 提交並推送到 GitHub，Render 會自動重新部署並在 `preDeployCommand` 重新執行 `npm run seed`（既有的填寫紀錄不會被覆蓋，只有主檔會更新/新增）。
+3. 提交並推送到 GitHub，Render 會自動重新部署，啟動時會重新執行 `node db/seed.js`（既有的填寫紀錄不會被覆蓋，只有主檔會更新/新增）。
