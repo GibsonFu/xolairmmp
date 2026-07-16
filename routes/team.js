@@ -5,6 +5,8 @@ const asyncHandler = require('../middleware/asyncHandler');
 const { currentMonthStr, MONTH_RE } = require('../utils/month');
 const { sendWorkbook } = require('../utils/exportRecords');
 const { BASE_QUERY, buildFilters } = require('../utils/recordsQuery');
+const hospitalUsageQuery = require('../utils/hospitalUsageQuery');
+const { sendWorkbook: sendHospitalWorkbook } = require('../utils/exportHospitalUsage');
 
 const router = express.Router();
 
@@ -56,6 +58,26 @@ router.get('/api/team/export', requireTeamLead, asyncHandler(async (req, res) =>
   );
   const monthLabel = (req.query.month && MONTH_RE.test(req.query.month)) ? req.query.month : currentMonthStr();
   await sendWorkbook(res, rows, `Xolair_MMP_組員資料_${monthLabel}.xlsx`);
+}));
+
+router.get('/api/team/hospital-usage', requireTeamLead, asyncHandler(async (req, res) => {
+  const psrCodes = await getGroupMemberCodes(req.session.user.psr_code);
+  const { where, values } = hospitalUsageQuery.buildFilters(req.query, { psrCodes });
+  const { rows } = await pool.query(
+    `${hospitalUsageQuery.BASE_QUERY}${where} ORDER BY c.psr_code, c.customer_code`,
+    values
+  );
+  res.json(rows);
+}));
+
+router.get('/api/team/hospital-usage/export', requireTeamLead, asyncHandler(async (req, res) => {
+  const psrCodes = await getGroupMemberCodes(req.session.user.psr_code);
+  const { where, values } = hospitalUsageQuery.buildFilters(req.query, { psrCodes });
+  const { rows } = await pool.query(
+    `${hospitalUsageQuery.BASE_QUERY}${where} ORDER BY c.psr_code, c.customer_code`,
+    values
+  );
+  await sendHospitalWorkbook(res, rows, 'Xolair_醫院平均用量_組員資料.xlsx');
 }));
 
 module.exports = router;

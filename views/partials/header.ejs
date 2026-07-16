@@ -4,9 +4,15 @@
     <span class="who"><%= user.display_name %>（<%= user.role === 'admin' ? '管理者' : '業代 ' + user.psr_code %>）</span>
     <% if (user.role === 'psr') { %>
       <a class="btn btn-secondary" href="/">我的填寫</a>
+      <a class="btn btn-secondary" href="/hospital-usage">醫院平均用量</a>
       <% if (user.is_team_lead) { %>
         <a class="btn btn-secondary" href="/team">組員資料</a>
+        <a class="btn btn-secondary" href="/team/hospital-usage">組員醫院用量</a>
       <% } %>
+    <% } %>
+    <% if (user.role === 'admin') { %>
+      <a class="btn btn-secondary" href="/">MMP 彙整總表</a>
+      <a class="btn btn-secondary" href="/admin/hospital-usage">醫院平均用量彙整</a>
     <% } %>
     <a class="btn btn-secondary" href="/change-password">變更密碼</a>
     <form style="display:inline" method="POST" action="/logout">

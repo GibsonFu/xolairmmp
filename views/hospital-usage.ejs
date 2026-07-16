@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>醫院平均用量 - Xolair MMP</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header', { user }) %>
+  <div class="container">
+    <div class="layout-2col">
+      <div>
+        <div class="toolbar">
+          <input type="text" id="searchBox" placeholder="搜尋醫院名稱...">
+        </div>
+        <div id="hospitalList"></div>
+      </div>
+      <div>
+        <div class="card" id="formCard" style="display:none;">
+          <h2 id="formTitle" style="margin-top:0;"></h2>
+          <div style="color:#6b7684; font-size:0.85rem; margin-bottom:1rem;" id="formSubtitle"></div>
+          <form id="usageForm">
+            <div class="form-grid">
+              <div class="field"><label>2026年1月用量</label><input type="number" name="usage_2026_01" step="0.01" class="calc-input"></div>
+              <div class="field"><label>2026年2月用量</label><input type="number" name="usage_2026_02" step="0.01" class="calc-input"></div>
+              <div class="field"><label>2026年3月用量</label><input type="number" name="usage_2026_03" step="0.01" class="calc-input"></div>
+              <div class="field"><label>2026年4月用量</label><input type="number" name="usage_2026_04" step="0.01" class="calc-input"></div>
+              <div class="field"><label>2026年5月用量</label><input type="number" name="usage_2026_05" step="0.01" class="calc-input"></div>
+              <div class="field"><label>2026年6月用量</label><input type="number" name="usage_2026_06" step="0.01" class="calc-input"></div>
+              <div class="field">
+                <label>平均用量</label>
+                <input type="number" name="average_usage" step="0.01">
+              </div>
+              <div class="field">
+                <label>已填月份平均（參考，非必填依據）</label>
+                <input type="text" id="autoAvgDisplay" class="readonly-field" readonly>
+              </div>
+            </div>
+            <div style="margin-top:1rem;">
+              <button type="submit">儲存</button>
+              <span class="save-status" id="saveStatus"></span>
+            </div>
+          </form>
+        </div>
+        <div class="card" id="emptyState">
+          <p style="color:#6b7684;">請從左側選擇一間醫院以填寫 2026 年 1~6 月用量與平均用量。若某個月沒有問到資料可以留空，平均用量請自行填寫。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/js/hospital-usage.js"></script>
+</body>
+</html>

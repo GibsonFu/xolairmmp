@@ -4,11 +4,12 @@ const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 
 const pool = require('./db/pool');
-const { requireLogin, requireTeamLead } = require('./middleware/auth');
+const { requireLogin, requireAdmin, requireTeamLead } = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
 const recordRoutes = require('./routes/records');
 const adminRoutes = require('./routes/admin');
 const teamRoutes = require('./routes/team');
+const hospitalUsageRoutes = require('./routes/hospitalUsage');
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use(authRoutes);
 app.use(recordRoutes);
 app.use(adminRoutes);
 app.use(teamRoutes);
+app.use(hospitalUsageRoutes);
 
 app.get('/', requireLogin, (req, res) => {
   if (req.session.user.role === 'admin') {
@@ -46,6 +48,21 @@ app.get('/', requireLogin, (req, res) => {
 
 app.get('/team', requireLogin, requireTeamLead, (req, res) => {
   res.render('team-dashboard', { user: req.session.user });
+});
+
+app.get('/hospital-usage', requireLogin, (req, res) => {
+  if (req.session.user.role !== 'psr') {
+    return res.status(403).send('權限不足');
+  }
+  res.render('hospital-usage', { user: req.session.user });
+});
+
+app.get('/admin/hospital-usage', requireLogin, requireAdmin, (req, res) => {
+  res.render('hospital-usage-admin', { user: req.session.user });
+});
+
+app.get('/team/hospital-usage', requireLogin, requireTeamLead, (req, res) => {
+  res.render('hospital-usage-team', { user: req.session.user });
 });
 
 app.use((req, res) => {

@@ -5,6 +5,8 @@ const asyncHandler = require('../middleware/asyncHandler');
 const { currentMonthStr, MONTH_RE } = require('../utils/month');
 const { sendWorkbook } = require('../utils/exportRecords');
 const { BASE_QUERY, buildFilters } = require('../utils/recordsQuery');
+const hospitalUsageQuery = require('../utils/hospitalUsageQuery');
+const { sendWorkbook: sendHospitalWorkbook } = require('../utils/exportHospitalUsage');
 
 const router = express.Router();
 
@@ -45,6 +47,24 @@ router.get('/api/admin/export', requireAdmin, asyncHandler(async (req, res) => {
   );
   const monthLabel = (req.query.month && MONTH_RE.test(req.query.month)) ? req.query.month : currentMonthStr();
   await sendWorkbook(res, rows, `Xolair_MMP_彙整_${monthLabel}.xlsx`);
+}));
+
+router.get('/api/admin/hospital-usage', requireAdmin, asyncHandler(async (req, res) => {
+  const { where, values } = hospitalUsageQuery.buildFilters(req.query);
+  const { rows } = await pool.query(
+    `${hospitalUsageQuery.BASE_QUERY}${where} ORDER BY c.psr_code, c.customer_code`,
+    values
+  );
+  res.json(rows);
+}));
+
+router.get('/api/admin/hospital-usage/export', requireAdmin, asyncHandler(async (req, res) => {
+  const { where, values } = hospitalUsageQuery.buildFilters(req.query);
+  const { rows } = await pool.query(
+    `${hospitalUsageQuery.BASE_QUERY}${where} ORDER BY c.psr_code, c.customer_code`,
+    values
+  );
+  await sendHospitalWorkbook(res, rows, 'Xolair_醫院平均用量_彙整.xlsx');
 }));
 
 module.exports = router;

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>醫院平均用量彙整 - Xolair MMP</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header', { user }) %>
+  <div class="container">
+    <div class="toolbar">
+      <select id="f_psr"><option value="">全部業代</option></select>
+      <input type="text" id="f_search" placeholder="搜尋醫院名稱...">
+      <a class="btn" id="exportBtn" href="/api/admin/hospital-usage/export">匯出 Excel</a>
+    </div>
+    <div id="summary" style="margin-bottom:0.8rem; color:#6b7684; font-size:0.9rem;"></div>
+    <div class="table-scroll">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>PSR</th><th>業代姓名</th><th>客戶代號</th><th>Customer</th>
+            <th>2026/1</th><th>2026/2</th><th>2026/3</th><th>2026/4</th><th>2026/5</th><th>2026/6</th>
+            <th>平均用量</th><th>最後更新</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    window.HU_API_BASE = '/api/admin/hospital-usage';
+    window.HU_EXPORT_API = '/api/admin/hospital-usage/export';
+    window.HU_FILTERS_API = '/api/admin/filters';
+  </script>
+  <script src="/js/hospitalAggregation.js"></script>
+</body>
+</html>
