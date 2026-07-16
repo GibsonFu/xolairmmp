@@ -30,12 +30,19 @@ router.post('/login', asyncHandler(async (req, res) => {
     return res.render('login', { error: '帳號或密碼錯誤' });
   }
 
+  let isTeamLead = false;
+  if (user.role === 'psr' && user.psr_code) {
+    const { rows: psrRows } = await pool.query('SELECT is_team_lead FROM psrs WHERE code = $1', [user.psr_code]);
+    isTeamLead = !!psrRows[0]?.is_team_lead;
+  }
+
   req.session.user = {
     username: user.username,
     display_name: user.display_name,
     role: user.role,
     psr_code: user.psr_code,
     must_change_password: user.must_change_password,
+    is_team_lead: isTeamLead,
   };
 
   if (user.must_change_password) {

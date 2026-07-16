@@ -4,10 +4,11 @@ const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 
 const pool = require('./db/pool');
-const { requireLogin } = require('./middleware/auth');
+const { requireLogin, requireTeamLead } = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
 const recordRoutes = require('./routes/records');
 const adminRoutes = require('./routes/admin');
+const teamRoutes = require('./routes/team');
 
 const app = express();
 
@@ -34,12 +35,17 @@ app.use(
 app.use(authRoutes);
 app.use(recordRoutes);
 app.use(adminRoutes);
+app.use(teamRoutes);
 
 app.get('/', requireLogin, (req, res) => {
   if (req.session.user.role === 'admin') {
     return res.render('admin-dashboard', { user: req.session.user });
   }
   res.render('psr-dashboard', { user: req.session.user });
+});
+
+app.get('/team', requireLogin, requireTeamLead, (req, res) => {
+  res.render('team-dashboard', { user: req.session.user });
 });
 
 app.use((req, res) => {

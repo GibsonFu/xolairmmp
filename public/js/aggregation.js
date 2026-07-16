@@ -1,3 +1,6 @@
+// 共用彙整表格邏輯，管理者(/api/admin)與組長(/api/team)頁面共用
+// 使用前需先設定 window.AGG_API_BASE
+
 function monthLabel(m) {
   const [y, mo] = m.split('-');
   return `${y}年${parseInt(mo, 10)}月`;
@@ -21,7 +24,7 @@ function currentFilters() {
 }
 
 async function loadFilters() {
-  const res = await fetch('/api/admin/filters');
+  const res = await fetch(`${window.AGG_API_BASE}/filters`);
   const data = await res.json();
 
   const monthSel = document.getElementById('f_month');
@@ -59,7 +62,7 @@ function esc(v) {
 
 async function loadTable() {
   const params = currentFilters();
-  const res = await fetch(`/api/admin/records?${params.toString()}`);
+  const res = await fetch(`${window.AGG_API_BASE}/records?${params.toString()}`);
   const rows = await res.json();
   document.getElementById('summary').textContent = `共 ${rows.length} 筆客戶/醫師資料`;
   document.getElementById('tableBody').innerHTML = rows.map((r) => `
@@ -105,6 +108,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   document.getElementById('exportBtn').addEventListener('click', (e) => {
     e.preventDefault();
-    window.location.href = `/api/admin/export?${currentFilters().toString()}`;
+    window.location.href = `${window.AGG_API_BASE}/export?${currentFilters().toString()}`;
   });
 });

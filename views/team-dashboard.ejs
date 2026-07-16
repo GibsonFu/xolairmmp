@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>彙整總表 - Xolair MMP</title>
+  <title>組員資料 - Xolair MMP</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -12,12 +12,12 @@
     <div class="toolbar">
       <label style="font-size:0.9rem; color:#6b7684;">月份：</label>
       <select id="f_month"></select>
-      <select id="f_psr"><option value="">全部業代</option></select>
+      <select id="f_psr"><option value="">全部組員</option></select>
       <select id="f_specialty"><option value="">全部科別</option></select>
       <select id="f_tiering"><option value="">全部 Tiering</option></select>
       <select id="f_status"><option value="">全部 Current Status</option></select>
       <input type="text" id="f_search" placeholder="搜尋客戶/醫師...">
-      <a class="btn" id="exportBtn" href="/api/admin/export">匯出 Excel</a>
+      <a class="btn" id="exportBtn" href="/api/team/export">匯出 Excel</a>
     </div>
     <div id="summary" style="margin-bottom:0.8rem; color:#6b7684; font-size:0.9rem;"></div>
     <div class="table-scroll">
@@ -37,7 +37,7 @@
       </table>
     </div>
   </div>
-  <script>window.AGG_API_BASE = '/api/admin';</script>
+  <script>window.AGG_API_BASE = '/api/team';</script>
   <script src="/js/aggregation.js"></script>
 </body>
 </html>

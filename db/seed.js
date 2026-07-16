@@ -19,6 +19,14 @@ const DEFAULT_OPTIONS = {
   current_status: ['減少使用(處方他廠)', '維持使用', '持續做為首選'],
 };
 
+// 組長可以看到同組所有業代的資料（組員資料頁面）
+const TEAM_GROUPS = [
+  { group: 'G1', lead: 'SC11', members: ['SC11', 'SC12', 'SC13'] },
+  { group: 'G2', lead: 'SC21', members: ['SC21', 'SC22'] },
+  { group: 'G3', lead: 'SC31', members: ['SC31', 'SC32', 'SC33'] },
+  { group: 'G4', lead: 'SC41', members: ['SC41', 'SC42', 'SC43', 'SC44'] },
+];
+
 async function run() {
   const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf-8');
   await pool.query(schema);
@@ -33,6 +41,15 @@ async function run() {
          ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name`,
         [psr.code, psr.name]
       );
+    }
+
+    for (const g of TEAM_GROUPS) {
+      for (const code of g.members) {
+        await client.query(
+          'UPDATE psrs SET team_group = $1, is_team_lead = $2 WHERE code = $3',
+          [g.group, code === g.lead, code]
+        );
+      }
     }
 
     for (const c of seedData.customers) {

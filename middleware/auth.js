@@ -17,4 +17,12 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-module.exports = { requireLogin, requireAdmin };
+function requireTeamLead(req, res, next) {
+  const isApi = req.path.startsWith('/api');
+  if (!req.session.user || req.session.user.role !== 'psr' || !req.session.user.is_team_lead) {
+    return isApi ? res.status(403).json({ error: '權限不足' }) : res.status(403).send('權限不足');
+  }
+  next();
+}
+
+module.exports = { requireLogin, requireAdmin, requireTeamLead };
