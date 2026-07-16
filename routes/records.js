@@ -125,7 +125,7 @@ router.post('/api/records/:customerId', requireLogin, asyncHandler(async (req, r
     customer.psr_code,
     b.team || null,
     b.customer_tier || null,
-    b.hcp_tier || null,
+    customer.tiering || null,
     b.customer_relationship || null,
     b.adoption_ladder || null,
     monthlyVolume,

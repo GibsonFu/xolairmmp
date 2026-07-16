@@ -14,7 +14,7 @@ const DEFAULT_PASSWORD = '0000';
 const DEFAULT_OPTIONS = {
   customer_relationship: ['陌生', '認識', '熟識'],
   adoption_ladder: ['未接觸', '試用', '採用', '倡導'],
-  current_status: ['活躍', '觀察', '休眠', '結案'],
+  current_status: ['減少使用(處方他廠)', '維持使用', '持續做為首選'],
 };
 
 async function run() {
@@ -67,11 +67,13 @@ async function run() {
       );
     }
 
+    // options 是純設定資料（不是使用者填寫的內容），每次都用 DEFAULT_OPTIONS 覆蓋，
+    // 這樣改字典只需要改這份程式碼，不會留下舊選項
     for (const [category, values] of Object.entries(DEFAULT_OPTIONS)) {
+      await client.query('DELETE FROM options WHERE category = $1', [category]);
       for (let i = 0; i < values.length; i++) {
         await client.query(
-          `INSERT INTO options (category, value, sort_order) VALUES ($1, $2, $3)
-           ON CONFLICT (category, value) DO NOTHING`,
+          'INSERT INTO options (category, value, sort_order) VALUES ($1, $2, $3)',
           [category, values[i], i]
         );
       }

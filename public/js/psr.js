@@ -88,7 +88,7 @@ async function selectCustomer(id) {
 
   const form = document.getElementById('recordForm');
   const fields = [
-    'team', 'customer_tier', 'hcp_tier', 'customer_relationship', 'adoption_ladder',
+    'team', 'customer_tier', 'customer_relationship', 'adoption_ladder',
     'monthly_patient_volume', 'current_status', 'severe_asthma_pct', 'xolair_pct',
     'monthly_call_no', 'dupixent_no', 'fasenra_no', 'nucala_no', 'tezspire_no',
     'competitor_activity', 'nurse_support', 'key_barriers', 'objectives', 'action_plan',
@@ -96,6 +96,7 @@ async function selectCustomer(id) {
   for (const f of fields) {
     if (form[f]) form[f].value = data[f] != null ? data[f] : '';
   }
+  form.hcp_tier.value = data.tiering || '';
   calcDisplays();
   document.getElementById('saveStatus').textContent = '';
 }
