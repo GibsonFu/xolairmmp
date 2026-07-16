@@ -9,6 +9,10 @@
 <body>
   <%- include('partials/header', { user }) %>
   <div class="container">
+    <div class="toolbar">
+      <label style="font-size:0.9rem; color:#6b7684;">填寫月份：</label>
+      <select id="monthSelect"></select>
+    </div>
     <div class="layout-2col">
       <div>
         <div class="toolbar">
@@ -20,6 +24,7 @@
         <div class="card" id="formCard" style="display:none;">
           <h2 id="formTitle" style="margin-top:0;"></h2>
           <div style="color:#6b7684; font-size:0.85rem; margin-bottom:1rem;" id="formSubtitle"></div>
+          <div class="hint" id="carriedOverHint" style="display:none; text-align:left; background:#fff8e1; color:#8a6d1f; padding:0.6rem 0.8rem; border-radius:6px; margin-bottom:1rem;"></div>
           <form id="recordForm">
             <div class="form-grid">
               <div class="field">

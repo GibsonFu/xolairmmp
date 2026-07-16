@@ -36,10 +36,11 @@ CREATE TABLE IF NOT EXISTS options (
   UNIQUE (category, value)
 );
 
--- 每位業代針對每位 HCP 維護一筆持續更新的紀錄（非逐次拜訪日誌）
+-- 每位業代針對每位 HCP、每個月各維護一筆紀錄（record_month 一律為當月第一天）
 CREATE TABLE IF NOT EXISTS records (
   id SERIAL PRIMARY KEY,
   customer_id INTEGER NOT NULL REFERENCES customers(id),
+  record_month DATE NOT NULL DEFAULT date_trunc('month', now())::date,
   psr_code VARCHAR(20) NOT NULL REFERENCES psrs(code),
   team VARCHAR(100),
   customer_tier VARCHAR(20),
@@ -66,8 +67,23 @@ CREATE TABLE IF NOT EXISTS records (
   updated_by VARCHAR(50) REFERENCES users(username),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (customer_id)
+  UNIQUE (customer_id, record_month)
 );
 
+-- 遷移既有資料庫：舊版沒有 record_month 欄位、且是「每客戶一筆」
+ALTER TABLE records ADD COLUMN IF NOT EXISTS record_month DATE NOT NULL DEFAULT date_trunc('month', now())::date;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE table_name = 'records' AND constraint_name = 'records_customer_id_key'
+  ) THEN
+    ALTER TABLE records DROP CONSTRAINT records_customer_id_key;
+    ALTER TABLE records ADD CONSTRAINT records_customer_id_record_month_key UNIQUE (customer_id, record_month);
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_records_psr_code ON records(psr_code);
+CREATE INDEX IF NOT EXISTS idx_records_customer_month ON records(customer_id, record_month DESC);
 CREATE INDEX IF NOT EXISTS idx_customers_psr_code ON customers(psr_code);

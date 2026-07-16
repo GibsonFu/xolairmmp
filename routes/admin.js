@@ -6,12 +6,24 @@ const asyncHandler = require('../middleware/asyncHandler');
 
 const router = express.Router();
 
+const MONTH_RE = /^\d{4}-\d{2}$/;
+
+function currentMonthStr() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function normalizeMonth(input) {
+  const monthStr = MONTH_RE.test(input || '') ? input : currentMonthStr();
+  return `${monthStr}-01`;
+}
+
 const BASE_QUERY = `
   SELECT
     c.id AS customer_id, p.code AS psr_code, p.name AS psr_name,
     c.specialty, c.tiering, c.customer_code, c.customer_name, c.contact_name,
     c.department, c.title,
-    r.team, r.customer_tier, r.hcp_tier, r.customer_relationship, r.adoption_ladder,
+    r.record_month, r.team, r.customer_tier, r.hcp_tier, r.customer_relationship, r.adoption_ladder,
     r.monthly_patient_volume, r.current_status,
     r.severe_asthma_pct, r.severe_asthma_no, r.xolair_pct, r.xolair_no,
     r.dupixent_no, r.fasenra_no, r.nucala_no, r.tezspire_no,
@@ -19,12 +31,13 @@ const BASE_QUERY = `
     r.monthly_call_no, r.action_plan, r.updated_at, r.updated_by
   FROM customers c
   JOIN psrs p ON p.code = c.psr_code
-  LEFT JOIN records r ON r.customer_id = c.id
+  LEFT JOIN records r ON r.customer_id = c.id AND r.record_month = $1
 `;
 
+// $1 固定保留給月份，其餘篩選條件從 $2 開始
 function buildFilters(query) {
   const clauses = [];
-  const values = [];
+  const values = [normalizeMonth(query.month)];
   if (query.psr_code) {
     values.push(query.psr_code);
     clauses.push(`p.code = $${values.length}`);
@@ -59,17 +72,22 @@ router.get('/api/admin/records', requireAdmin, asyncHandler(async (req, res) => 
 }));
 
 router.get('/api/admin/filters', requireAdmin, asyncHandler(async (req, res) => {
-  const [psrs, specialties, tierings, statuses] = await Promise.all([
+  const [psrs, specialties, tierings, statuses, months] = await Promise.all([
     pool.query('SELECT code, name FROM psrs ORDER BY code'),
     pool.query('SELECT DISTINCT specialty FROM customers WHERE specialty IS NOT NULL ORDER BY specialty'),
     pool.query('SELECT DISTINCT tiering FROM customers WHERE tiering IS NOT NULL ORDER BY tiering'),
     pool.query('SELECT value FROM options WHERE category = $1 ORDER BY sort_order', ['current_status']),
+    pool.query('SELECT DISTINCT record_month FROM records ORDER BY record_month DESC'),
   ]);
+  const monthSet = new Set(months.rows.map((r) => r.record_month.toISOString().slice(0, 7)));
+  monthSet.add(currentMonthStr());
   res.json({
     psrs: psrs.rows,
     specialties: specialties.rows.map((r) => r.specialty),
     tierings: tierings.rows.map((r) => r.tiering),
     statuses: statuses.rows.map((r) => r.value),
+    months: [...monthSet].sort().reverse(),
+    currentMonth: currentMonthStr(),
   });
 }));
 
@@ -84,6 +102,7 @@ router.get('/api/admin/export', requireAdmin, asyncHandler(async (req, res) => {
   const sheet = workbook.addWorksheet('MMP彙整');
 
   sheet.columns = [
+    { header: '月份', key: 'record_month', width: 10 },
     { header: 'Team', key: 'team', width: 12 },
     { header: 'PSR', key: 'psr_code', width: 10 },
     { header: '業代姓名', key: 'psr_name', width: 12 },
@@ -120,11 +139,13 @@ router.get('/api/admin/export', requireAdmin, asyncHandler(async (req, res) => {
   for (const row of rows) {
     sheet.addRow({
       ...row,
+      record_month: row.record_month ? row.record_month.toISOString().slice(0, 7) : '',
       updated_at: row.updated_at ? new Date(row.updated_at).toLocaleString('zh-TW') : '',
     });
   }
 
-  const filename = `Xolair_MMP_彙整_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const monthLabel = (req.query.month && MONTH_RE.test(req.query.month)) ? req.query.month : currentMonthStr();
+  const filename = `Xolair_MMP_彙整_${monthLabel}.xlsx`;
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader(
     'Content-Disposition',

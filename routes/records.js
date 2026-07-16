@@ -6,6 +6,18 @@ const asyncHandler = require('../middleware/asyncHandler');
 const router = express.Router();
 
 const OPTION_CATEGORIES = ['customer_relationship', 'adoption_ladder', 'current_status'];
+const MONTH_RE = /^\d{4}-\d{2}$/;
+
+function currentMonthStr() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// 'YYYY-MM' -> 'YYYY-MM-01'；格式不對就用當月
+function normalizeMonth(input) {
+  const monthStr = MONTH_RE.test(input || '') ? input : currentMonthStr();
+  return `${monthStr}-01`;
+}
 
 router.get('/api/options', requireLogin, asyncHandler(async (req, res) => {
   const { rows } = await pool.query(
@@ -18,38 +30,64 @@ router.get('/api/options', requireLogin, asyncHandler(async (req, res) => {
   res.json(grouped);
 }));
 
-// 業代自己的客戶清單（含目前紀錄填寫狀態）
+// 業代自己的客戶清單（含當月是否已填寫）
 router.get('/api/customers', requireLogin, asyncHandler(async (req, res) => {
   if (req.session.user.role !== 'psr') {
     return res.status(403).json({ error: '此帳號無客戶清單，請至彙整頁面查看' });
   }
+  const month = normalizeMonth(req.query.month);
   const { rows } = await pool.query(
     `SELECT c.id, c.customer_code, c.customer_name, c.contact_name, c.department, c.title,
             c.specialty, c.tiering,
             r.id AS record_id, r.updated_at
      FROM customers c
-     LEFT JOIN records r ON r.customer_id = c.id
+     LEFT JOIN records r ON r.customer_id = c.id AND r.record_month = $2
      WHERE c.psr_code = $1
      ORDER BY c.customer_name, c.contact_name`,
-    [req.session.user.psr_code]
+    [req.session.user.psr_code, month]
   );
   res.json(rows);
 }));
 
 router.get('/api/customers/:id', requireLogin, asyncHandler(async (req, res) => {
-  const { rows } = await pool.query(
-    `SELECT c.*, r.* , c.id AS customer_id
-     FROM customers c
-     LEFT JOIN records r ON r.customer_id = c.id
-     WHERE c.id = $1`,
-    [req.params.id]
-  );
-  const row = rows[0];
-  if (!row) return res.status(404).json({ error: '找不到此客戶資料' });
-  if (req.session.user.role === 'psr' && row.psr_code !== req.session.user.psr_code) {
+  const month = normalizeMonth(req.query.month);
+
+  const { rows: custRows } = await pool.query('SELECT * FROM customers WHERE id = $1', [req.params.id]);
+  const customer = custRows[0];
+  if (!customer) return res.status(404).json({ error: '找不到此客戶資料' });
+  if (req.session.user.role === 'psr' && customer.psr_code !== req.session.user.psr_code) {
     return res.status(403).json({ error: '無權限查看此客戶' });
   }
-  res.json(row);
+
+  const { rows: currentRows } = await pool.query(
+    'SELECT * FROM records WHERE customer_id = $1 AND record_month = $2',
+    [req.params.id, month]
+  );
+
+  if (currentRows[0]) {
+    return res.json({ ...customer, ...currentRows[0], customer_id: customer.id, carried_over: false });
+  }
+
+  const { rows: priorRows } = await pool.query(
+    `SELECT * FROM records WHERE customer_id = $1 AND record_month < $2
+     ORDER BY record_month DESC LIMIT 1`,
+    [req.params.id, month]
+  );
+
+  if (priorRows[0]) {
+    const prior = priorRows[0];
+    return res.json({
+      ...customer,
+      ...prior,
+      id: null,
+      customer_id: customer.id,
+      record_month: month,
+      carried_over: true,
+      carried_over_month: prior.record_month,
+    });
+  }
+
+  res.json({ ...customer, customer_id: customer.id, record_month: month, carried_over: false });
 }));
 
 function toIntOrNull(v) {
@@ -66,6 +104,7 @@ function toNumOrNull(v) {
 
 router.post('/api/records/:customerId', requireLogin, asyncHandler(async (req, res) => {
   const customerId = req.params.customerId;
+  const month = normalizeMonth(req.query.month);
   const { rows: custRows } = await pool.query('SELECT * FROM customers WHERE id = $1', [customerId]);
   const customer = custRows[0];
   if (!customer) return res.status(404).json({ error: '找不到此客戶資料' });
@@ -82,6 +121,7 @@ router.post('/api/records/:customerId', requireLogin, asyncHandler(async (req, r
 
   const values = [
     customerId,
+    month,
     customer.psr_code,
     b.team || null,
     b.customer_tier || null,
@@ -109,12 +149,12 @@ router.post('/api/records/:customerId', requireLogin, asyncHandler(async (req, r
 
   const { rows } = await pool.query(
     `INSERT INTO records (
-       customer_id, psr_code, team, customer_tier, hcp_tier, customer_relationship, adoption_ladder,
+       customer_id, record_month, psr_code, team, customer_tier, hcp_tier, customer_relationship, adoption_ladder,
        monthly_patient_volume, current_status, severe_asthma_pct, severe_asthma_no, xolair_pct, xolair_no,
        dupixent_no, fasenra_no, nucala_no, tezspire_no, competitor_activity, nurse_support, key_barriers,
        objectives, monthly_call_no, action_plan, created_by, updated_by
-     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$24)
-     ON CONFLICT (customer_id) DO UPDATE SET
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$25)
+     ON CONFLICT (customer_id, record_month) DO UPDATE SET
        team = EXCLUDED.team,
        customer_tier = EXCLUDED.customer_tier,
        hcp_tier = EXCLUDED.hcp_tier,

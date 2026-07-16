@@ -1,6 +1,12 @@
+function monthLabel(m) {
+  const [y, mo] = m.split('-');
+  return `${y}年${parseInt(mo, 10)}月`;
+}
+
 function currentFilters() {
   const params = new URLSearchParams();
   const map = {
+    f_month: 'month',
     f_psr: 'psr_code',
     f_specialty: 'specialty',
     f_tiering: 'tiering',
@@ -17,6 +23,13 @@ function currentFilters() {
 async function loadFilters() {
   const res = await fetch('/api/admin/filters');
   const data = await res.json();
+
+  const monthSel = document.getElementById('f_month');
+  monthSel.innerHTML = data.months.map((m) =>
+    `<option value="${m}">${monthLabel(m)}${m === data.currentMonth ? '（本月）' : ''}</option>`
+  ).join('');
+  monthSel.value = data.currentMonth;
+
   const psrSel = document.getElementById('f_psr');
   data.psrs.forEach((p) => {
     const opt = document.createElement('option');
@@ -83,7 +96,7 @@ async function loadTable() {
 document.addEventListener('DOMContentLoaded', async () => {
   await loadFilters();
   await loadTable();
-  ['f_psr', 'f_specialty', 'f_tiering', 'f_status'].forEach((id) =>
+  ['f_month', 'f_psr', 'f_specialty', 'f_tiering', 'f_status'].forEach((id) =>
     document.getElementById(id).addEventListener('change', loadTable)
   );
   document.getElementById('f_search').addEventListener('input', () => {

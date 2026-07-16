@@ -1,6 +1,26 @@
 let customers = [];
 let options = {};
 let currentCustomerId = null;
+let currentMonth = null;
+
+function monthLabel(m) {
+  const [y, mo] = m.split('-');
+  return `${y}年${parseInt(mo, 10)}月`;
+}
+
+function populateMonthSelect() {
+  const sel = document.getElementById('monthSelect');
+  const now = new Date();
+  const opts = [];
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const m = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    opts.push(m);
+  }
+  currentMonth = opts[0];
+  sel.innerHTML = opts.map((m) => `<option value="${m}">${monthLabel(m)}${m === opts[0] ? '（本月）' : ''}</option>`).join('');
+  sel.value = currentMonth;
+}
 
 async function loadOptions() {
   const res = await fetch('/api/options');
@@ -13,7 +33,7 @@ async function loadOptions() {
 }
 
 async function loadCustomers() {
-  const res = await fetch('/api/customers');
+  const res = await fetch(`/api/customers?month=${currentMonth}`);
   customers = await res.json();
   renderCustomerList();
 }
@@ -49,7 +69,7 @@ async function selectCustomer(id) {
   currentCustomerId = id;
   renderCustomerList(document.getElementById('searchBox').value);
 
-  const res = await fetch(`/api/customers/${id}`);
+  const res = await fetch(`/api/customers/${id}?month=${currentMonth}`);
   if (!res.ok) return;
   const data = await res.json();
 
@@ -57,6 +77,14 @@ async function selectCustomer(id) {
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('formTitle').textContent = `${data.contact_name}（${data.customer_name}）`;
   document.getElementById('formSubtitle').textContent = `${data.specialty || ''}　${data.department || ''}　${data.title || ''}　客戶代號：${data.customer_code}`;
+
+  const hint = document.getElementById('carriedOverHint');
+  if (data.carried_over) {
+    hint.style.display = 'block';
+    hint.textContent = `以下資料帶自 ${monthLabel(data.carried_over_month.slice(0, 7))} 的填寫紀錄，請確認並更新後儲存，會建立 ${monthLabel(currentMonth)} 的新紀錄（不會覆蓋原本的月份）。`;
+  } else {
+    hint.style.display = 'none';
+  }
 
   const form = document.getElementById('recordForm');
   const fields = [
@@ -73,8 +101,17 @@ async function selectCustomer(id) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  populateMonthSelect();
   loadOptions();
   loadCustomers();
+
+  document.getElementById('monthSelect').addEventListener('change', (e) => {
+    currentMonth = e.target.value;
+    currentCustomerId = null;
+    document.getElementById('formCard').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'block';
+    loadCustomers();
+  });
 
   document.getElementById('searchBox').addEventListener('input', (e) => renderCustomerList(e.target.value));
 
@@ -85,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!currentCustomerId) return;
     const form = e.target;
     const body = Object.fromEntries(new FormData(form).entries());
-    const res = await fetch(`/api/records/${currentCustomerId}`, {
+    const res = await fetch(`/api/records/${currentCustomerId}?month=${currentMonth}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -94,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (res.ok) {
       status.style.color = '#1e8a4c';
       status.textContent = '已儲存';
+      document.getElementById('carriedOverHint').style.display = 'none';
       await loadCustomers();
       renderCustomerList(document.getElementById('searchBox').value);
     } else {
