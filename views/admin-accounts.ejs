@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>帳號管理 - Xolair MMP</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header', { user }) %>
+  <div class="container">
+    <p style="color:#6b7684; font-size:0.9rem; margin-bottom:1rem;">重設密碼會把該帳號改回預設密碼 0000，並要求下次登入時重新設定新密碼。</p>
+    <div class="table-scroll">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>帳號</th><th>姓名</th><th>角色</th><th>組別</th><th>密碼狀態</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <script src="/js/admin-accounts.js"></script>
+</body>
+</html>

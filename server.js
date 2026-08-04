@@ -65,6 +65,10 @@ app.get('/team/hospital-usage', requireLogin, requireTeamLead, (req, res) => {
   res.render('hospital-usage-team', { user: req.session.user });
 });
 
+app.get('/admin/accounts', requireLogin, requireAdmin, (req, res) => {
+  res.render('admin-accounts', { user: req.session.user });
+});
+
 app.use((req, res) => {
   res.status(404).send('找不到頁面');
 });

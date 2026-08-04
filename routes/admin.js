@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
 const pool = require('../db/pool');
 const { requireAdmin } = require('../middleware/auth');
 const asyncHandler = require('../middleware/asyncHandler');
@@ -65,6 +66,29 @@ router.get('/api/admin/hospital-usage/export', requireAdmin, asyncHandler(async 
     values
   );
   await sendHospitalWorkbook(res, rows, 'Xolair_醫院平均用量_彙整.xlsx');
+}));
+
+router.get('/api/admin/accounts', requireAdmin, asyncHandler(async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT u.username, u.display_name, u.role, u.must_change_password, u.psr_code,
+            p.team_group, p.is_team_lead
+     FROM users u
+     LEFT JOIN psrs p ON p.code = u.psr_code
+     ORDER BY (u.role = 'admin') DESC, u.username`
+  );
+  res.json(rows);
+}));
+
+router.post('/api/admin/accounts/:username/reset-password', requireAdmin, asyncHandler(async (req, res) => {
+  const { rows: userRows } = await pool.query('SELECT * FROM users WHERE username = $1', [req.params.username]);
+  if (!userRows[0]) return res.status(404).json({ error: '找不到此帳號' });
+
+  const hash = await bcrypt.hash('0000', 10);
+  await pool.query(
+    'UPDATE users SET password_hash = $1, must_change_password = TRUE WHERE username = $2',
+    [hash, req.params.username]
+  );
+  res.json({ ok: true, username: req.params.username });
 }));
 
 module.exports = router;
